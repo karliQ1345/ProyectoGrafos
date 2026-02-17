@@ -111,8 +111,20 @@ namespace ProyectoGrafos
             {
                 for (int j = 0; j < _grafo.NumeroNodos; j++)
                 {
-                    dgvDistancias.Rows[i].Cells[j].Value =
-                        (distancias[i, j] >= Grafo.INF) ? "INF" : distancias[i, j].ToString();
+                    var celdaDist = dgvDistancias.Rows[i].Cells[j];
+
+                    if (distancias[i, j] >= Grafo.INF)
+                    {
+                        celdaDist.Value = "∞"; // o "INF" si prefieres
+                        celdaDist.Style.ForeColor = Color.Red;
+                        celdaDist.Style.Font = new Font(dgvDistancias.Font, FontStyle.Bold);
+                    }
+                    else
+                    {
+                        celdaDist.Value = distancias[i, j].ToString();
+                        celdaDist.Style.ForeColor = Color.Black;
+                        celdaDist.Style.Font = dgvDistancias.Font;
+                    }
 
                     dgvSiguiente.Rows[i].Cells[j].Value = siguiente[i, j].ToString(); // -1 o siguiente nodo
                 }
@@ -182,20 +194,35 @@ namespace ProyectoGrafos
         {
             dgv.Columns.Clear();
             dgv.Rows.Clear();
-
             dgv.AllowUserToAddRows = false;
-            dgv.RowHeadersWidth = 70;
+            dgv.AllowUserToDeleteRows = false;
+            dgv.AllowUserToResizeRows = false;
+            dgv.AllowUserToResizeColumns = false;
+            dgv.AllowUserToOrderColumns = false;
             dgv.ReadOnly = !editable;
-
+            dgv.MultiSelect = false;
+            dgv.SelectionMode = DataGridViewSelectionMode.CellSelect;
+            dgv.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dgv.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+            dgv.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dgv.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dgv.RowHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dgv.EnableHeadersVisualStyles = false;
+            dgv.ColumnHeadersDefaultCellStyle.BackColor = Color.LightGray;
+            dgv.RowHeadersDefaultCellStyle.BackColor = Color.LightGray;
+            dgv.RowHeadersWidth = 70;
+            // Crear columnas
             for (int j = 0; j < n; j++)
             {
-                dgv.Columns.Add($"c{j}", $"N{j}");
-                dgv.Columns[j].Width = 55;
+                dgv.Columns.Add("c" + j, "N" + j);
             }
 
+            // Crear filas
             dgv.Rows.Add(n);
             for (int i = 0; i < n; i++)
-                dgv.Rows[i].HeaderCell.Value = $"N{i}";
+            {
+                dgv.Rows[i].HeaderCell.Value = "N" + i;
+            }
         }
 
         // -------------------- DIBUJO --------------------
@@ -301,6 +328,14 @@ namespace ProyectoGrafos
 
             g.DrawLine(lapiz, punta, izq);
             g.DrawLine(lapiz, punta, der);
+        }
+
+        private void btnRedibujar_Click(object sender, EventArgs e)
+        {
+            if (_grafo == null) return;
+            LeerPesosDesdeGrid(_grafo);
+            _posiciones = CrearLayoutCircular(panelDibujo.ClientSize, _grafo.NumeroNodos);
+            panelDibujo.Invalidate();
         }
     }
 }
